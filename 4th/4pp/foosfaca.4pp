@@ -1,0 +1,79 @@
+\ Preprocessor FOOS Facade pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include lib/memcell.4th
+include 4pp/lib/foos.4pp
+
+\ The 'Subsystem ClassA' class
+:: CarModel
+   class
+     method: SetModel
+   end-class {
+
+     :method SetModel { ." CarModel - SetModel" cr } ;method
+   }
+;
+
+\ <summary>
+\ The 'Subsystem ClassB' class
+\ </summary>
+
+:: CarEngine
+   class
+     method: SetEngine
+   end-class {
+
+     :method SetEngine { ." CarEngine - SetEngine" cr } ;method
+   }
+;
+
+\ The 'Subsystem ClassC' class
+:: CarBody
+   class
+     method: SetBody
+   end-class {
+
+     :method SetBody { ." CarBody - SetBody" cr } ;method
+   }
+;
+
+\ The 'Subsystem ClassD' class
+:: CarAccessories
+   class
+     method: SetAccessories
+   end-class {
+
+     :method SetAccessories { ." CarAccessories - SetAccessories" cr } ;method
+   }
+;
+
+\ The 'Facade' class
+:: CarFacade
+   class
+     field: accessories
+     field: body
+     field: engine
+     field: model
+     method: CreateCompleteCar
+   end-class {
+
+     new CarAccessories this -> accessories !
+     new CarBody this -> body !
+     new CarEngine this -> engine !
+     new CarModel this -> model !
+
+     :method CreateCompleteCar {
+       ." ******** Creating a Car **********" cr
+       this -> model  @ -> SetModel
+       this -> engine @ -> SetEngine
+       this -> body   @ -> SetBody
+       this -> accessories @ -> SetAccessories
+       ." ******** Car creation is completed. **********" cr
+     } ;method
+   }
+;
+
+\ Facade pattern demo
+new CarFacade to facade
+facade -> CreateCompleteCar

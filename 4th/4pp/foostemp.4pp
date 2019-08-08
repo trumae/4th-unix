@@ -1,0 +1,97 @@
+\ Preprocessor template pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include lib/memcell.4th
+include lib/memchar.4th
+include lib/constant.4th
+include 4pp/lib/foos.4pp
+
+:: Movie
+   class
+     field:   title
+     field:   director
+     method:  assignDirector
+     method:  fireDirector
+     virtual: playing
+     virtual: rewinding
+   end-class {
+
+     dup 1+ callocate abort" Cannot create title"
+     dup >r place r> this -> title !
+     NULL this -> director !
+
+     :method assignDirector {
+        dup 1+ callocate abort" Cannot create director"
+        dup >r place r> this -> director !
+     } ;method
+
+     :method fireDirector {
+        NULL this -> director over over @ <>
+        if dup @ cfree abort" Cannot fire director" then !
+     } ;method
+
+     :default rewinding {} ;method
+
+     :default playing {
+        .| "| this -> title @ count type 
+        .| " by |  this -> director @ count type cr
+     } ;method
+   }
+
+   private{ title director }
+;
+
+:: Film
+   extends Movie
+     method: ChangeReel
+   end-extends {
+
+     :virtual rewinding { ." Rewinding reel." cr } ;method
+     :method  changeReel { this => rewinding ." Next reel." cr } ;method
+
+     :virtual playing {
+        this <- playing ." First reel is rolling." cr
+        this -> changeReel this => rewinding
+     } ;method
+   }
+;
+
+:: VHS
+   extends Movie
+   end-extends {
+
+     :virtual rewinding { ." Rewinding tape." cr } ;method
+
+     :virtual playing {
+        this <- playing this => rewinding ." Cassette is turning." cr
+     } ;method
+   }
+;
+
+:: DVD
+   extends Movie
+     method: ChangeReel
+   end-extends {
+
+     :virtual playing {
+        this <- playing ." DVD is spinning." cr
+     } ;method
+   }
+;
+
+s" Casablanca" new Film to Casablanca
+s" Michael Curtiz" Casablanca -> assignDirector
+Casablanca => playing cr
+
+s" Debbie does Dallas" new VHS to Debbie
+s" Jim Buckley" Debbie -> assignDirector
+                Debbie -> fireDirector
+s" Jim Clark"   Debbie -> assignDirector
+Debbie => playing cr
+
+s" The Matrix" new DVD to Matrix
+s" The Wachowski Brothers" Matrix -> assignDirector
+                           Matrix -> fireDirector
+s" The Wachowski Sisters"  Matrix -> assignDirector
+Matrix => playing cr

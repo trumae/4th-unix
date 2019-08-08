@@ -1,0 +1,65 @@
+\ Preprocessor FOOS Abstract factory pattern demo - Copyright 2016 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include lib/memcell.4th
+include 4pp/lib/ansforth.4pp
+include 4pp/lib/foos.4pp
+
+:: ButtonInterface
+   class
+     virtual: Paint
+   end-class {}
+;
+
+:: WinButton
+   extends ButtonInterface
+   end-extends {
+
+     :virtual Paint { ." Windows Button" } ;method
+   }
+;
+
+:: OSXButton
+   extends ButtonInterface
+   end-extends {
+
+     :virtual Paint { ." OSX Button" } ;method
+   }
+;
+
+:: GUIFactoryInterface
+   class
+     virtual: CreateButton
+   end-class {}
+;
+
+:: WinFactory
+   extends GUIFactoryInterface
+   end-extends {
+
+     :virtual CreateButton { new WinButton } ;method
+   }
+;
+
+:: OSXFactory
+   extends GUIFactoryInterface
+   end-extends {
+
+     :virtual CreateButton { new OSXButton } ;method
+   }
+;
+
+0   enum WIN
+    enum OSX
+constant OTHER
+
+OSX to Appearance
+
+Appearance case
+  WIN of new WinFactory to Factory endof
+  OSX of new OSXFactory to Factory endof
+endcase
+
+Factory => CreateButton to button
+Button => Paint cr

@@ -1,0 +1,51 @@
+District of ColumbiaDCWashington    672228  176    1 
+Rhode Island        RIProvidence    1056298 4002   2 
+Delaware            DEDover         945934  6446   1 
+New Hampshire       NHConcord       1330608 24214  2 
+Vermont             VTMontpelier    626042  24905  1 
+Hawaii              HIHonolulu      1431603 28314  2 
+Maine               MEAugusta       1329328 91634  2 
+Indiana             INIndianapolis  6619680 94327  9 
+Connecticut         CTHartford      3590886 14356  5 
+New Jersey          NJTrenton       8958013 22592  12
+West Virgina        WVCharleston    1844128 62755  3 
+South Carolina      SCColumbia      4896146 82931  7 
+Maryland            MDAnnapolis     6006401 32131  8 
+Massachusetts       MABoston        6794422 27335  9 
+Arizona             AZPhoenix       6828065 295233 9 
+Ohio                OHColumbus      11613423116099 16
+Michigan            MILansing       9922576 250488 14
+Iowa                IADes Moines    3123899 145746 4 
+Colorado            CODenver        5456574 269602 7 
+Washington          WAOlympia       7170351 184661 10
+Kansas              KSTopeka        2911641 213099 4 
+North Carolina      NCRaleigh       10042802139391 13
+Nebraska            NELincoln       1896190 200330 3 
+Wyoming             WYCheyenne      586107  253335 1 
+Minnesota           MNSt. Paul      5489594 225163 8 
+Texas               TXAustin        27469114695660 36
+New York            NYAlbany        19795791141297 27
+Nevada              NVCarson City   2890845 286380 4 
+California          CASacramento    39144818423968 53
+Tennessee           TNNashville     6600299 109152 9 
+Louisiana           LABaton Rouge   4670724 135658 6 
+Kentucky            KYFrankfort     4425092 104656 6 
+Idaho               IDBoise         1654930 216443 2 
+Missouri            MOJefferson City6083672 180540 8 
+Wisconsin           WIMadison       5771337 169634 8 
+Arkansas            ARLittle Rock   2978204 137733 4 
+Florida             FLTallahassee   20271272170312 27
+Oklahoma            OKOklahoma City 3911338 181038 5 
+South Dakota        SDPierre        858469  199730 1 
+Pennsylvania        PAHarrisburg    12802503119279 18
+Montana             MTHelena        1032949 380832 1 
+Mississippi         MSJackson       2992333 125438 4 
+North Dakota        NDBismarck      756927  183107 1 
+Alabama             ALMontgomery    4858979 135767 7 
+Georgia             GAAtlanta       10214860153910 14
+Oregon              ORSalem         4028977 254800 5 
+Illinois            ILSpringfield   12859995149997 18
+Utah                UTSalt Lake City2995919 219882 4 
+New Mexico          NMSanta Fe      2085109 314917 3 
+Virginia            VARichmond      8382993 110787 11
+Alaska              AKJuneau        738432  17233371 

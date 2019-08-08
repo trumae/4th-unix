@@ -1,0 +1,71 @@
+\ Preprocessor FOOS command pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include 4pp/lib/foos.4pp
+
+\ The Command interface
+:: Command
+   class
+     virtual: MakeItSo
+   end-class {}
+;
+
+\ The Invoker class
+:: Switch                              ( cmd --)
+   class
+     virtual: DoIt
+   end-class {
+
+     :virtual DoIt { => MakeItSo } ;method
+   }
+;
+
+\ The Receiver class
+:: Light
+   class
+     virtual: turnOn
+     virtual: turnOff
+   end-class {
+
+     :virtual turnOn  { ." The light is on"  cr } ;method
+     :virtual turnOff { ." The light is off" cr } ;method
+   }
+;
+
+\ The Command for turning on the light - ConcreteCommand #1
+:: FlipUpCommand                       ( light --)
+   extends Command
+     field: theLight
+   end-extends {
+
+     this -> theLight !
+
+     :virtual MakeItSo { this -> theLight @ => turnOn } ;method
+   }
+
+   private{ theLight }
+;
+
+\ The Command for turning off the light - ConcreteCommand #2
+:: FlipDownCommand                     ( light --)
+   extends Command
+     field: theLight
+   end-extends {
+
+     this -> theLight !
+
+     :virtual MakeItSo { this -> theLight @ => turnOff } ;method
+   }
+
+   private{ theLight }
+;
+
+static Light lamp
+lamp static FlipUpCommand switchUp
+lamp static FlipDownCommand switchDown
+static Switch mySwitch
+
+switchUp   mySwitch => DoIt
+switchDown mySwitch => DoIt
+switchUp   mySwitch => DoIt

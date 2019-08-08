@@ -1,0 +1,52 @@
+\ Preprocessor FOOS observer pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Observer_pattern
+
+include lib/leaf.4th                   \ use a linked list
+include 4pp/lib/foos.4pp
+
+:: Notifier                            \ helper class for observer
+   class
+     method: notify                    ( a n observable --)
+   end-class {
+
+     :method notify { -rot ." Got " type ."  from " . cr } ;method
+   }
+;
+
+:: Observable
+   class
+     field:  observers
+     method: register_observer         ( observer --)
+     method: notify_observers          ( a n --)
+   end-class {
+     NULL this -> observers !
+
+     :method register_observer { 0 this -> observers l.append } ;method
+
+     :method notify_observers {
+        this -> observers begin        ( a n o)
+          @ dup NULL <>                ( a n o f)
+        while                          ( a n o)
+          >r 2dup r@ -rot r>           ( a n o a n o)
+          l.value this swap -> notify l.link
+        repeat drop 2drop              ( --)
+     } ;method
+   }
+
+   private{ observers }                \ hide linked list
+;
+
+:: Observer
+   extends Notifier
+   end-extends {
+
+     this swap -> register_observer
+   }
+;
+
+instance Observable subject            \ create an observable
+subject instance Observer object       \ create an observer
+s" test" subject -> notify_observers   \ send a signal to the observers

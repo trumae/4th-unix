@@ -1,0 +1,59 @@
+
+
+
+
+
+
+
+
+
+
+
+[DEFINED] allocate [IF]
+[DEFINED] forcecellheap [IF]
+: (~~new) allocate abort" Out of heap space" tuck >r execute r> ;
+[THEN]
+[THEN]
+
+: (~~child!) over ! ; : parent@ @ 1+ @c ;
+: (~~parent!) >r over >r execute r> r> (~~child!) ;
+: derived? swap begin over over <> while dup 1+ @c tuck = until = ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+: Singleton
+struct 1+
+field: myvalue
+field: getValue
+
+end-struct ~~Singleton ['] Singleton (~~child!) >r
+
+12345 r@ -> myvalue !
+: getInstance ;
+:noname >r r@ -> myvalue @ r> drop ; r@ -> getValue !
+r> drop
+;
+
+~~Singleton array Object latest Singleton hide Singleton
+
+Object -> getInstance .
+Object dup getValue @ execute . cr

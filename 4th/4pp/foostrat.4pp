@@ -1,0 +1,80 @@
+\ Preprocessor FOOS strategy pattern demo - Copyright 2016 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Strategy_pattern
+
+include lib/memcell.4th
+include 4pp/lib/foos.4pp
+
+\ Encapsulated family of Algorithms
+\ Interface and its implementations
+
+:: IBrakeBehavior
+   class
+     virtual: brake
+   end-class {}
+;
+
+:: BrakeWithABS
+   extends IBrakeBehavior
+   end-extends {
+
+     :virtual brake { ." Brake with ABS applied" } ;method
+   }
+;
+
+:: BrakeWithoutABS
+   extends IBrakeBehavior
+   end-extends {
+
+     :virtual brake { ." Simple Brake applied" } ;method
+   }
+;
+
+\ Client that can use the algorithms above interchangeably
+
+:: Car
+   class
+     field:   brakeBehavior
+     virtual: applyBrake
+     virtual: setBrakeBehavior
+   end-class {
+
+     :virtual applyBrake { this -> brakeBehavior @ => brake } ;method
+     :virtual setBrakeBehavior { this -> brakeBehavior ! } ;method
+   }
+;
+
+\ Client 1 uses one algorithm (BrakeWithoutABS) in the constructor
+:: Sedan
+   extends Car
+   end-extends {
+
+     new BrakeWithoutABS this -> brakeBehavior !
+   }
+;
+
+\ Client 2 uses another algorithm (BrakeWithABS) in the constructor
+:: SUV
+   extends Car
+   end-extends {
+
+     new BrakeWithABS this -> brakeBehavior !
+   }
+;
+
+\ Using the Car example
+
+: CarExample
+  new Sedan to sedanCar
+  sedanCar => applyBrake cr
+
+  new SUV to suvCar
+  suvCar => applyBrake cr
+                                       \ set brake behavior dynamically
+  new BrakeWithoutABS suvCar => setBrakeBehavior
+  suvCar => applyBrake cr
+;
+
+CarExample

@@ -1,0 +1,86 @@
+\ Preprocessor FOOS state pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include lib/ulcase.4th
+include lib/memcell.4th
+include 4pp/lib/foos.4pp               \ we need this because objects
+                                       \ refer to one another
+:macro new-incomplete >#> @dup _#_ _mangle (~~new) ;
+:macro incomplete-class >#> @dup 0 value _#_ 0 value _mangle ;
+:macro resolve-class >#> >#> @over @over ' _#_ to _#_ _mangle to _mangle ;
+                                       \ it's quite dirty, I see no other way
+:: Statelike
+   class
+     virtual: writeName
+   end-class {}
+;
+
+\ The context class has a state variable that it instantiates in an initial
+\ state, in this case StateLowerCase. In its method, it uses the corresponding
+\ methods of the state object.
+
+:: IStateContext
+   extends Statelike
+     field: myState
+     virtual: setState
+   end-extends {}
+;
+
+incomplete-class StateUpperCase        \ deferred object definition
+
+:: StateLowerCase
+   extends Statelike
+   end-extends {
+
+     :virtual writeName {
+       s>lower type cr
+       new-incomplete StateUpperCase swap => setState
+     } ;method
+   }
+;
+
+:: UpperCase
+   extends Statelike
+     field: cnt
+   end-extends {
+
+     0 this -> cnt !
+
+     \ Change state after StateUpperCase's writeName gets invoked twice
+
+     :virtual writeName {
+        s>upper type cr this -> cnt 1 over +! @ 1 >
+        if new StateLowerCase swap => setState else drop then
+     } ;method
+
+     private{ cnt }
+   }
+;
+
+resolve-class StateUpperCase UpperCase \ reassign UpperCase to deferred name
+
+:: StateContext
+   extends IStateContext
+   end-extends {
+
+     \ Setter method for the state.
+     \ Normally only called by classes implementing the State interface.
+
+     :virtual setState { this -> myState ! } ;method
+     :virtual writeName { this -rot this -> myState @ => writeName } ;method
+
+     new StateLowerCase this => setState
+   }
+;
+
+new StateContext to sc
+
+s" Monday"    sc => writeName
+s" Tuesday"   sc => writeName
+s" Wednesday" sc => writeName
+s" Thursday"  sc => writeName
+s" Friday"    sc => writeName
+s" Saturday"  sc => writeName
+s" Saturday"  sc => writeName
+s" Sunday"    sc => writeName

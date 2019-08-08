@@ -1,0 +1,112 @@
+\ Preprocessor mediator pattern demo
+\ 4tH version - Copyright 2017 J.L. Bezemer
+
+\ The Code Project Open License (CPOL) 1.02
+\ Full license: https://www.codeproject.com/info/cpol10.aspx
+
+\ Translation of https://www.codeproject.com/Articles/186187/Mediator-Design-Pattern
+
+include lib/memcell.4th
+include lib/memchar.4th
+include 4pp/lib/foos.4pp
+
+16 constant /list
+
+:: List                                \ we need a kind of list
+   class
+     /list +field entries
+     field:  lp
+     method: ladd
+     method: lget
+     method: lsize
+   end-class {
+
+     this -> entries this -> lp !      \ set list pointer
+                                       \ save at pointer and increment
+     :method ladd  { this -> lp tuck @ ! 1 cells swap +! } ;method
+     :method lget  { cells this -> entries + @ } ;method
+     :method lsize { this -> lp @ this -> entries - } ;method
+   }                                   \ calculate size
+
+   private{ entries lp }
+;
+
+:: IMediator
+   class
+     field:   Colleagues
+     virtual: DistributeMessage
+     virtual: Register
+   end-class {}
+;
+
+
+:: IColleague
+   class
+     virtual: SendMessage
+     virtual: ReceiveMessage
+   end-class {}
+;
+
+:: ConcreteMediator
+   extends IMediator
+   end-extends {
+
+     new List this -> Colleagues !
+                                       ( col --)
+     :virtual Register { this -> Colleagues @ -> ladd } ;method
+
+     :virtual DistributeMessage {      ( a n col --)
+        this -> Colleagues @ -> lsize 1-
+        begin                          ( a n col i)
+          dup 0< 0=
+        while                          ( a n i col1 col2 f)
+          tuck this -> Colleagues @ -> lget over over =
+          if drop else -rot >r >r >r 2dup r> => ReceiveMessage r> r> then
+          swap 1-                      ( a n col i)
+        repeat drop drop 2drop
+     } ;method
+   }
+;
+
+:: ConcreteColleague
+   extends IColleague
+     field: name
+   end-extends {
+
+     dup 1+ callocate abort" Cannot create name"
+     dup this -> name ! place
+                                       ( a n med --)
+     :virtual SendMessage { this swap => DistributeMessage } ;method
+
+     :virtual ReceiveMessage {         ( a n --)
+        this -> name @ count type ."  received " type cr
+     } ;method
+   }
+;
+
+\ list of participants
+s" ColleagueA" new ConcreteColleague to colleagueA
+s" ColleagueB" new ConcreteColleague to colleagueB
+s" ColleagueC" new ConcreteColleague to colleagueC
+s" ColleagueD" new ConcreteColleague to colleagueD
+
+\ first mediator
+new ConcreteMediator to mediator1
+
+\ participants registers to the mediator
+colleagueA mediator1 => Register
+colleagueB mediator1 => Register
+colleagueC mediator1 => Register
+
+\ participantA sends out a message
+s" MessageX from ColleagueA" mediator1 colleagueA => SendMessage
+
+\ second mediator
+new ConcreteMediator to mediator2
+
+\ participants registers to the mediator
+colleagueB mediator2 => Register
+colleagueD mediator2 => Register
+
+\ participantB sends out a message
+s" MessageY from ColleagueB" mediator2 colleagueB => SendMessage

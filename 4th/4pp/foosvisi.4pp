@@ -1,0 +1,132 @@
+\ Preprocessor FOOS visitor pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Visitor_pattern
+
+include lib/memcell.4th
+include lib/memchar.4th
+include 4pp/lib/ansforth.4pp
+include 4pp/lib/foos.4pp
+
+16 constant /list
+
+:: List                                \ we need a kind of list
+   class
+     /list +field entries
+     field:  lp
+     method: ladd
+     method: lget
+     method: lsize
+   end-class {
+
+     this -> entries this -> lp !      \ set list pointer
+                                       \ save at pointer and increment
+     :method ladd  { this -> lp tuck @ ! 1 cells swap +! } ;method
+     :method lget  { cells this -> entries + @ } ;method
+     :method lsize { this -> lp @ this -> entries - } ;method
+   }                                   \ calculate size
+
+   private{ entries lp }
+;
+
+:: CarElement
+   class
+     virtual: Accepts
+   end-class {}
+;
+
+:: CarElementVisitor
+   class
+     virtual: visit
+   end-class {}
+;
+
+:: Wheel
+   extends CarElement
+     field:  name
+     method: getName
+   end-extends {
+
+     dup 1+ callocate abort" Cannot create name"
+     dup this -> name ! place
+
+     :method getName { this -> name @ count } ;method
+     :virtual Accepts { this swap => visit } ;method
+   }
+;
+
+:: Body
+   extends CarElement
+   end-extends {
+
+     :virtual Accepts { this swap => visit } ;method
+   }
+;
+
+:: Engine
+   extends CarElement
+   end-extends {
+
+     :virtual Accepts { this swap => visit } ;method
+   }
+;
+
+:: Car
+   extends CarElement
+     field: elements
+   end-extends {
+
+     new List this -> elements !
+
+     s" front left"  new Wheel this -> elements @ -> ladd
+     s" front right" new Wheel this -> elements @ -> ladd
+     s" back left"   new Wheel this -> elements @ -> ladd
+     s" back right"  new Wheel this -> elements @ -> ladd
+     new Body   this -> elements @ -> ladd
+     new Engine this -> elements @ -> ladd
+
+     :virtual Accepts { 
+        this -> elements @ -> lsize 1- \ example lists these in reverse
+        begin                          ( vis i)
+          dup 0< 0=
+        while
+          over over this -> elements @ -> lget swap => visit 1-
+        repeat drop this swap => visit
+     } ;method
+   }
+;
+
+:: CarElementDoVisitor
+   extends CarElementVisitor
+   end-extends {
+
+     :virtual visit {
+        dup type@ case
+          typeof Body   of ." Moving my body" cr drop endof
+          typeof Car    of ." Starting my car" cr drop endof
+          typeof Wheel  of ." Kicking my " -> getName type ."  wheel" cr endof
+          typeof Engine of ." Starting my engine" cr drop endof
+        endcase
+     } ;method
+   }
+;
+
+:: CarElementPrntVisitor
+   extends CarElementVisitor
+   end-extends {
+
+     :virtual visit {
+        dup type@ case
+          typeof Body   of ." Visiting body" cr drop endof
+          typeof Car    of ." Visiting car" cr drop endof
+          typeof Wheel  of ." Visiting " -> getName type ."  wheel" cr endof
+          typeof Engine of ." Visiting engine" cr drop endof
+        endcase
+     } ;method
+   }
+;
+
+instance Car myCar
+new CarElementPrntVisitor myCar => Accepts
+new CarElementDoVisitor myCar => Accepts

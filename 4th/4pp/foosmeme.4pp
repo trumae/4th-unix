@@ -1,0 +1,81 @@
+\ Preprocessor FOOS memento pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Memento_pattern
+
+include lib/memcell.4th
+include lib/memchar.4th
+include 4pp/lib/foos.4pp
+
+:: Memento
+   class
+     field:  state
+     method: getSavedState
+   end-class {
+
+     this -> state !
+
+     :method getSavedState { this -> state @ } ;method
+   }
+
+   private{ state }
+;
+
+:: Originator
+   class
+     field:  state
+     method: set
+     method: saveToMemento
+     method: restoreFromMemento
+   end-class {
+
+     :method set { 
+        ." Originator: Setting state to " 2dup type cr
+        dup 1+ callocate abort" Cannot create originator"
+        dup this -> state ! place
+     } ;method
+
+     :method saveToMemento {
+        ." Originator: Saving to Memento" cr
+        this -> state @ new Memento
+     } ;method
+
+     :method restoreFromMemento {
+        -> getSavedState this -> state !
+        ." Originator: State after restoring from Memento: "
+        this -> state @ count type cr
+     } ;method
+   }
+
+   private{ state }
+;
+
+:: SaveState                           \ we need a kind of list
+   class
+     16 +field list
+     field:  lp
+     method: add
+     method: get
+   end-class {
+
+     this -> list this -> lp !         \ set list pointer
+                                       \ save at pointer and increment
+     :method add { this -> lp tuck @ ! 1 cells swap +! } ;method
+     :method get { cells this -> list + @ } ;method
+   }
+
+   private{ list lp }
+;
+
+instance Originator myorigin
+instance SaveState  mysavestate
+
+s" State1" myorigin -> set
+s" State2" myorigin -> set
+myorigin -> saveToMemento mysavestate -> add
+                                       \ We can request multiple mementos
+s" State3" myorigin -> set             \ and choose which one to roll back to
+myorigin -> saveToMemento mysavestate -> add
+s" State4" myorigin -> set
+1 mysavestate -> get myorigin -> restoreFromMemento

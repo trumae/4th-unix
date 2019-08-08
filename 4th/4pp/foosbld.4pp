@@ -1,0 +1,75 @@
+\ Preprocessor FOOS builder pattern demo - Copyright 2016 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include lib/memcell.4th                \ add dynamic memory
+include lib/memchar.4th                \ add dynamic memory
+include 4pp/lib/foos.4pp               \ add object orientation
+
+:: Car
+   class
+     field: wheels
+     field: color
+     virtual: Wheels!
+     virtual: GetWheels
+     virtual: Color!
+     virtual: GetColor
+   end-class {
+
+     :virtual GetWheels { this -> wheels @ } ;method
+     :virtual Wheels! { this -> wheels ! } ;method
+     :virtual GetColor { this -> color @ count } ;method
+
+     :virtual Color! {
+       dup 1+ callocate throw
+       dup this -> color ! place
+     } ;method
+   }
+
+   private{ wheels color }               \ private declarations MUST be made
+;
+
+\ The builder abstraction
+:: ICarBuilder
+   class 
+     virtual: SetColor
+     virtual: SetWheels
+     virtual: Result@
+   end-class {}
+;
+
+\ Concrete builder implementation
+:: CarBuilder
+   extends ICarBuilder
+     field: _Car_
+   end-extends {
+
+     new Car this -> _Car_ !
+
+     :virtual SetColor  { this -> _Car_ @ => Color!  } ;method
+     :virtual SetWheels { this -> _Car_ @ => Wheels! } ;method
+     :virtual Result@ { this -> _Car_ @ } ;method
+   }
+
+   private{ _Car_ }
+;
+
+\ The director
+:: CarBuildDirector
+   class
+     field: builder
+     virtual: GetResult
+   end-class {
+
+     new CarBuilder this -> builder !
+
+     s" White" this -> builder @ => SetColor
+     4 this -> builder @ => SetWheels
+
+     :virtual GetResult { this -> builder @ => Result@ } ;method
+   }
+;
+
+new CarBuildDirector to Director
+Director => GetResult => GetColor type cr
+Director => GetResult => GetWheels . cr

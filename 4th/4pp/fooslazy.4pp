@@ -1,0 +1,75 @@
+\ Preprocessor lazy pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Lazy_initialization
+
+include lib/hash.4th
+include lib/hashkey.4th
+include lib/memcell.4th
+include lib/memchar.4th
+include 4pp/lib/foos.4pp
+
+32 constant /hashmap                   \ size of hashmap
+(error) constant Nothing               \ a non-object to call static methods
+
+:: HashMap                             \ a wrapper for hashkey.4th
+   class
+     /hashmap +field entries           \ put map inside the object
+     method: hget
+     method: hput
+     method: hrow
+     method: hsize
+   end-class {
+
+     this -> entries /hashmap hashtable
+     ['] fnv1a is hash                 \ initialize and set hash algorithm
+
+     :method hsize { this -> entries @   } ;method
+     :method hrow  { 2* 3 + cells this -> entries + @ } ;method
+     :method hget  { this -> entries get } ;method
+     :method hput  { this -> entries put } ;method
+   }
+
+   private{ entries }
+;
+
+static HashMap types
+
+:: Fruit
+   class
+     field:  ftype
+     method: getFruit
+     method: printCurrentTypes
+   end-class {
+
+     dup 1+ callocate abort" Cannot create type"
+     dup >r place r> this -> ftype !
+
+     :method getFruit {
+        2dup types -> hget Nothing =
+        if 2dup new Fruit -rot types -> hput else 2drop then
+     } ;method
+
+     :method printCurrentTypes {
+        ." Number of instances made: " types -> hsize . cr
+        types -> hsize 1-
+        begin
+          dup 0< 0=
+        while
+          dup types -> hrow -> ftype @ count type cr 1-
+        repeat drop cr
+     } ;method
+   }
+
+   private{ ftype }
+;
+
+s" Apple" Nothing -> getFruit
+Nothing -> printCurrentTypes
+
+s" Banana" Nothing -> getFruit
+Nothing -> printCurrentTypes
+
+s" Apple" Nothing -> getFruit
+Nothing -> printCurrentTypes

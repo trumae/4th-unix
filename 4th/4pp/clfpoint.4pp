@@ -1,0 +1,53 @@
+\ Published on c.l.f, Wednesday 15 April 2015 20:23:25
+\ Believed to be in the public domain
+
+include lib/memcell.4th                \ for ALLOCATE
+include lib/memchar.4th                \ for CALLOCATE
+include 4pp/lib/foos.4pp               \ for Object orientation
+
+:: point                               \ define a point class
+   class
+     field: x                          \ point x-coordinate
+     field: y                          \ point y-coordinate
+     field: name                       \ name of the point
+     method: show                      \ show a point
+     method: delta                     \ modify point coordinates
+     method: destroy                   \ destroy a point
+   end-class {
+                                       \ constructor
+     dup 1+ callocate abort" Out of memory" dup this -> name ! place
+     this -> y ! this -> x !           \ initialize the point
+
+     :method show {                    ( --)
+        this -> name @ count type space
+        ." @ (" this -> x @ 0 .r ." , " this -> y @ 0 .r ." ) " cr
+     } ;method
+
+     :method destroy {                 ( --)
+        this -> name @ cfree
+        this free or abort" Unable to free memory"
+     } ;method
+                                       ( x y --)
+     :method delta { this -> y +! this -> x +! } ;method
+   }
+;
+                                       \ create two points
+7 1 s" Bob the Goblin" instance point goblin
+5 0 s" Protagonist" instance point player
+
+goblin -> show                         \ show both points
+player -> show
+
+-1 0 goblin -> delta                   \ do two modifications and show it
+-1 0 goblin -> delta
+goblin ->  show
+
+-1 0 goblin -> delta                   \ do another two modifications
+goblin -> show
+0 3 goblin -> delta
+
+goblin -> show                         \ show both points
+player -> show
+
+goblin -> destroy                      \ destroy both points
+player -> destroy

@@ -1,0 +1,175 @@
+\ Preprocessor flyweight pattern demo - Copyright 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+\ Translation of https://en.wikipedia.org/wiki/Flyweight_pattern
+
+include lib/hash.4th
+include lib/hashkey.4th
+include lib/memcell.4th
+include lib/memchar.4th
+include 4pp/lib/foos.4pp
+
+\ Expected output:
+
+\   Serving Espresso to table 121
+\   Serving Cappuccino to table 121
+\   Serving Frappe to table 552
+\   Serving Espresso to table 96
+\   Serving Cappuccino to table 3
+\   Serving Espresso to table 3
+\   Serving Frappe to table 3
+\   Serving Cappuccino to table 97
+\   Serving Frappe to table 897
+\   Serving Espresso to table 1
+\   Serving Frappe to table 1
+\   Serving Cappuccino to table 2
+
+\   total CoffeeFlavour objects made: 3
+
+32 constant /hashmap
+16 constant /list
+
+:: HashMap                             \ an OO wrapper for hashkey.4th
+   class
+     /hashmap +field entries           \ put map inside the object
+     method: hget
+     method: hput
+     method: hsize
+   end-class {
+
+     this -> entries /hashmap hashtable
+     ['] fnv1a is hash                 \ initialize and set hash algorithm
+                                       \ that's where the counter is hidden
+     :method hsize { this -> entries @   } ;method
+     :method hget  { this -> entries get } ;method
+     :method hput  { this -> entries put } ;method
+
+     private{ entries }
+   }
+;
+
+:: List                                \ we need a kind of list
+   class
+     /list +field entries
+     field:  lp
+     method: ladd
+     method: lget
+     method: lsize
+   end-class {
+
+     this -> entries this -> lp !      \ set list pointer
+                                       \ save at pointer and increment
+     :method ladd  { this -> lp tuck @ ! 1 cells swap +! } ;method
+     :method lget  { cells this -> entries + @ } ;method
+     :method lsize { this -> lp @ this -> entries - } ;method
+   }                                   \ calculate size
+
+   private{ entries lp }
+;
+
+\ Instances of CoffeeFlavour will be the Flyweights
+:: CoffeeFlavour
+   class
+     field:  name
+     method: getName
+   end-class {
+
+     dup 1+ callocate abort" Cannot create flavour"
+     dup >r place r> this -> name !
+
+     :method getName { this -> name @ count } ;method
+   }
+;
+
+\ Menu acts as a factory and cache for CoffeeFlavour flyweight objects
+:: Menu
+   class
+     field:  flavours
+     method: lookup
+     method: totalCoffeeFlavoursMade
+   end-class {
+
+     new HashMap this -> flavours !    \ make a hashmap
+
+     :method totalCoffeeFlavoursMade { this -> flavours @ -> hsize } ;method
+
+     :method lookup {
+        2dup this -> flavours @ -> hget error?
+        if                             \ not found, create object
+          drop 2dup new CoffeeFlavour dup 2swap this -> flavours @ -> hput
+        else                           \ and save the string
+          nip nip                      \ found, get rid of string
+        then                           \ return object
+     } ;method
+
+     private{ flavours }
+   }
+;
+
+\ Order is the context of the CoffeeFlavour flyweight.
+:: Order
+   class
+     field:  tableNumber
+     field:  flavour
+     method: serve
+   end-class {
+
+     this -> tableNumber ! this -> flavour !
+
+     :method serve {
+        ." Serving " this -> flavour @ -> getName type
+        ."  to table " this -> tableNumber ? cr
+     } ;method
+   }
+;
+
+:: CoffeeShop
+   class
+     field:  orders
+     field:  mymenu
+     method: takeOrder
+     method: service
+     method: report
+   end-class {
+
+     new List this -> orders !
+     new Menu this -> mymenu !
+
+     :method takeOrder {               ( a n1 n2 --)
+        -rot this -> mymenu @ -> lookup
+        swap new Order this -> orders @ -> ladd
+     } ;method
+
+     :method service {
+        this -> orders @ -> lsize 1-   \ example lists these in reverse
+        begin dup 0< 0= while dup this -> orders @ -> lget -> serve 1- repeat
+        drop                           \ get rid of the counter
+     } ;method
+
+     :method report { 
+       cr ." total CoffeeFlavour objects made: "
+       this -> mymenu @ -> totalCoffeeFlavoursMade . cr
+     } ;method
+
+     private{ orders mymenu }
+   }
+;
+
+new CoffeeShop to shop
+
+s" Cappuccino"   2 shop -> takeOrder
+s" Frappe"       1 shop -> takeOrder
+s" Espresso"     1 shop -> takeOrder
+s" Frappe"     897 shop -> takeOrder
+s" Cappuccino"  97 shop -> takeOrder
+s" Frappe"       3 shop -> takeOrder
+s" Espresso"     3 shop -> takeOrder
+s" Cappuccino"   3 shop -> takeOrder
+s" Espresso"    96 shop -> takeOrder
+s" Frappe"     552 shop -> takeOrder
+s" Cappuccino" 121 shop -> takeOrder
+s" Espresso"   121 shop -> takeOrder
+
+shop -> service
+shop -> report

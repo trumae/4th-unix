@@ -1,0 +1,23 @@
+\ Preprocessor FOOS Singleton pattern demo - Copyright 2016, 2017 J.L. Bezemer
+\ You can redistribute this file and/or modify it under
+\ the terms of the GNU General Public License
+
+include 4pp/lib/foos.4pp
+
+:: Singleton
+   class
+     field: myvalue
+     virtual: getValue
+     method: getInstance
+   end-class {
+
+     12345 this -> myvalue !
+     :method getInstance ;method
+     :virtual getValue { this -> myvalue @ } ;method
+   }
+;
+
+single Singleton Object
+
+Object -> getInstance .
+Object => getValue . cr
